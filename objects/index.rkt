@@ -4,6 +4,7 @@
   "class.rkt"
   "object.rkt"
   "member.rkt"
+  "array.rkt"
 )
 
 (#%provide
@@ -11,6 +12,8 @@
   compose
 
   new
+
+  array
 
   public
   public-mut

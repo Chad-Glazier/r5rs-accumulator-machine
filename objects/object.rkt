@@ -36,9 +36,12 @@
 ))
 
 (define new-private (lambda (original-members all-members)
-  (lambda (id . args)
+  (lambda (original-id . original-args)
     (let*
       (
+        (indexing? (number? original-id))
+        (id (if indexing? `access original-id))
+        (args (if indexing? (cons original-id original-args) original-args))
         (member (id:member id all-members))
       )
       (cond
@@ -84,10 +87,13 @@
       (all-members (deep-copy members))
       (public-members (filter public? all-members))      
     )
-    (lambda (id . args)
-      (let 
+    (lambda (original-id . original-args)
+      (let*
         (
-          (member (id:member id public-members))
+          (indexing? (number? original-id))
+          (id (if indexing? `access original-id))
+          (args (if indexing? (cons original-id original-args) original-args))
+          (member (id:member id all-members))
         )
         (cond
           ((undefined? member)

@@ -42,7 +42,12 @@
         ")"
       )
     )
-    ((vector? x) (string-append "#" (any->string (vector->list x))))
+    ((vector? x) 
+      (if (> (vector-length x) 5)
+        (string-append "#(" (number->string (vector-length x)) ")")
+        (string-append "#" (any->string (vector->list x)))
+      )
+    )
     ((procedure? x) (string-append "#<procedure>"))
   )
 ))
