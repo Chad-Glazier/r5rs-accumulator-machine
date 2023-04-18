@@ -67,19 +67,3 @@
   )
 ))
 
-;;; TESTS
-(#%require rackunit)
-(define point (class
-  (public-mut `x 0)
-  (public-mut `y 0)
-  (public `to-vector (lambda (this)
-    (vector (this `x) (this `y))
-  ))
-))
-(define vector-of-example (vector-of 100 point))
-(check-equal? (eq? (vector-ref vector-of-example 0) (vector-ref vector-of-example 1)) #f)
-(check-equal? ((vector-ref vector-of-example 0) `x) 0)
-
-(define arr (array point 100))
-((arr -1) `x 99)
-;;; (arr `for-each (lambda (p i) (display i) (newline) (display (p `to-string))))

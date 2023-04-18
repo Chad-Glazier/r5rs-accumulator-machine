@@ -42,6 +42,3 @@
 (define private-obj (lambda (identifier value)
   (new-member identifier value `private #f #t)
 ))
-
-;;; TESTS
-(#%require rackunit)

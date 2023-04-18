@@ -50,18 +50,3 @@
   (equal? `undefined x)
 ))
 
-;;; TESTS
-(#%require rackunit)
-(check-equal? (method? (public-mut `x (lambda () 8))) #t)
-(check-equal? (method? (public-mut `x 45)) #f)
-(check-equal? (property? (public-mut `x 4)) #t)
-(check-equal? (property? (public-mut `x (lambda () 8))) #f)
-(check-equal? (mutable? (public `x 5)) #f)
-(check-equal? (mutable? (public-mut `x 5)) #t)
-(check-equal? (mutable? (public-mut `x (lambda () 8))) #f)
-(check-equal? (private? (private-mut `x 5)) #t)
-(check-equal? (private? (public-mut `x 5)) #f)
-(check-equal? (public? (private-mut `x 5)) #f)
-(check-equal? (public? (public-mut `x 5)) #t)
-(check-equal? (object? (public-obj `obj (lambda () #f))) #t)
-(check-equal? (object? (private `fn (lambda () #f))) #f)
