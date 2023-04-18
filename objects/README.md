@@ -41,9 +41,9 @@ Instances are represented with functions. With these functions, you can use the 
 
 |Call|Purpose|
 |-|-|
-|`(<obj> <id>)`|If the member with the corresponding `id` is a built-in Scheme object/primitive, the value of the member is returned.If the member is a method, it is invoked with no arguments except the reference to this `obj`.If the member is an object, an error is caused because objects cannot be called without any arguments.|
-|`(<obj> <id> [args...])`|If the member is a built-in Scheme object/primitive, the value of the member is assigned the value of the *last* `arg`.If the member is a method, it is invoked with the reference to this `obj` and each `arg`.If the member is an object, the object is invoked with the `args` as arguments.|
-|`(<array> <index>)`|Unlike the other calls, this one can take a number as the first argument, instead of an identifying symbol. Thistype of call is only meant for arrays and can create errors if used on a non-array object. It indexes the arrayand returns the element.|
+|`(<obj> <id>)`|If the member with the corresponding `id` is a built-in Scheme object/primitive, the value of the member is returned. If the member is a method, it is invoked with no arguments except the reference to this `obj`. If the member is an object, an error is caused because objects cannot be called without any arguments.|
+|`(<obj> <id> [args...])`|If the member is a built-in Scheme object/primitive, the value of the member is assigned the value of the *last* `arg`. If the member is a method, it is invoked with the reference to this `obj` and each `arg`. If the member is an object, the object is invoked with the `args` as arguments.|
+|`(<array> <index>)`|Unlike the other calls, this one can take a number as the first argument, instead of an identifying symbol. This type of call is only meant for arrays and can create errors if used on a non-array object. It indexes the arrayand returns the element.|
 
 ## Overview
 
