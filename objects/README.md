@@ -45,6 +45,20 @@ Instances are represented with functions. With these functions, you can use the 
 |`(<obj> <id> [args...])`|If the member is a built-in Scheme object/primitive, the value of the member is assigned the value of the *last* `arg`. If the member is a method, it is invoked with the reference to this `obj` and each `arg`. If the member is an object, the object is invoked with the `args` as arguments.|
 |`(<array> <index>)`|Unlike the other calls, this one can take a number as the first argument, instead of an identifying symbol. This type of call is only meant for arrays and can create errors if used on a non-array object. It indexes the array and returns the element.|
 
+The following are built-in methods of objects.
+
+|Method|Syntax|Purpose|
+|-|-|-|
+|`to-string`|```(<obj> `to-string)```|Returns a string representation of the object. The string describes the object in a C-like syntax.|
+|`class`|```(<obj> `class)```|Returns a reference to the original class used to instantiate the object.|
+
+The following are built-in methods of arrays. Note that arrays are objects, so they also have the built-in methods described above.
+
+|Method|Syntax|Purpose|
+|-|-|-|
+|`length`|```(<arr> `length)```|Returns the length of the array.|
+|`for-each`|```(<arr> `for-each <callback)```|Invokes the callback function for each element. The callback should expect two elements: the current element, and it's index (in that order).|
+
 ## Overview
 
 This library is imported like so:
