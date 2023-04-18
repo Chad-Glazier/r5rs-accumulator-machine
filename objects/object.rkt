@@ -98,7 +98,7 @@
         (cond
           ((undefined? member)
             (case id
-              (`to-string (members->string public-members))
+              (`to-string (members->string all-members))
               (`class members)
               (else 
                 (begin
