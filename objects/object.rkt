@@ -88,7 +88,7 @@
               )
               (`to-string 
                 (members->string 
-                  members 
+                  members
                   (if (defined? args) 
                     (car args) 
                     0
@@ -128,7 +128,7 @@
                       ((member::method? target)
                         (apply (member::value target) (cons
                           (lambda args
-                            (apply interact (cons #f args))
+                            (apply interact (cons #t args))
                           )
                           (if (defined? args) args `())
                         ))

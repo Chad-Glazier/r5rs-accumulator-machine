@@ -1,16 +1,16 @@
 #lang r5rs
 
-(#%require "objects/index.rkt")
+(#%require "cpu.rkt")
 
-(define obj (object
-  (public `a (vector `apple "bottom" (list #\j #\e #\a #\n #\s)))
-  (public `b (list `el-1 "el-2" 3))
-  (public `nested-object (object
-    (public `x 0)
-    (public `y "1")
-    (public `z `2)
-  ))
+(define simple-addition-program (list
+  799
+  798
+  199
+  398
+  299
+  899
+  0
 ))
 
-(display (obj `to-string))
-(newline)
+(cpu `load simple-addition-program)
+(cpu `run)
