@@ -1,119 +1,63 @@
 #lang r5rs
 
-(#%provide 
-  has
-  some
-  find
+(#%require "strings.rkt")
+(#%provide
   filter
-  reduce
-  deep-copy
+  find
 )
 
-(define has (lambda (target lst)
-  (some 
-    (lambda (element)
-      (equal? element target)
-    )
-    lst
-  )
-))
-
-(define some (lambda (predicate lst)
+(define (filter predicate? lst)
   (cond
-    ((null? lst) 
-      #f
+    ((vector? lst) 
+      (list->vector (filter predicate? (vector->list lst)))
     )
-    ((predicate (car lst))
-      #t
+    ((string? lst) 
+      (list->string (filter predicate? (string->list lst)))
+    )
+    ((and (pair? lst) (not (list? lst)))
+      (begin
+        (display (string-append
+          "Warning: Attempted to `filter` a non-list pair. In this case,\n"
+          "  `filter` will return the given pair. The given pair was\n"
+          "  " (any->string lst) "\n\n"
+        ))
+        lst
+      )
+    )
+    ((null? lst) `())
+    ((predicate? (car lst))
+      (cons (car lst) (filter predicate? (cdr lst)))
     )
     (else
-      (some predicate (cdr lst))
+      (filter predicate? (cdr lst))
     )
   )
-))
+)
 
-(define find (lambda (predicate lst)
+(define (find predicate? lst)
   (cond
-    ((null? lst) 
-      `()
+    ((vector? lst) 
+      (list->vector (find predicate? (vector->list lst)))
     )
-    ((predicate (car lst))
+    ((string? lst) 
+      (list->string (find predicate? (string->list lst)))
+    )
+    ((and (pair? lst) (not (list? lst)))
+      (begin
+        (display (string-append
+          "Warning: Attempted to `find` with a non-list pair. In this case,\n"
+          "  `find` will return the given pair, i.e.,\n"
+          "  " (any->string lst) "\n\n"
+        ))
+        lst
+      )
+    )
+    ((null? lst) `())
+    ((predicate? (car lst))
       (car lst)
     )
     (else
-      (find predicate (cdr lst))
+      (find predicate? (cdr lst))
     )
   )
-))
-
-(define filter (lambda (predicate lst)
-  (cond
-    ((null? lst) 
-      '()
-    )
-    ((predicate (car lst))
-     (cons (car lst) (filter predicate (cdr lst)))
-    )
-    (else 
-      (filter predicate (cdr lst))
-    )
-  )
-))
-
-(define reduce-helper (lambda (reducer lst acc)
-  (cond
-    ((null? lst) acc)
-    (else
-      (reduce-helper
-        reducer
-        (cdr lst)
-        (reducer acc (car lst))
-      )
-    )
-  )
-))
-
-(define reduce (lambda (reducer lst . init)
-  (cond
-    ((null? lst) lst)
-    ((null? (cdr lst)) (car lst))
-    (else
-      (if (null? init)
-        (reduce-helper
-          reducer
-          (cdr lst)
-          (car lst)
-        )
-        (reduce-helper
-          reducer
-          lst
-          (car init)
-        )
-      )    
-    )
-  )
-))
-
-(define deep-copy (lambda (lst)
-  (cond
-    ((null? lst) 
-      lst
-    )
-    ((not (pair? lst))
-      lst
-    )
-    ((pair? (car lst))
-      (cons 
-        (deep-copy (car lst)) 
-        (deep-copy (cdr lst))
-      )
-    )
-    (else
-      (cons 
-        (car lst) 
-        (deep-copy (cdr lst))
-      )
-    )
-  )
-))
-
+)

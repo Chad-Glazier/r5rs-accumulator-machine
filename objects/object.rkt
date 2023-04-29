@@ -1,134 +1,206 @@
 #lang r5rs
 
 (#%require 
-  "util/predicates.rkt"
-  "util/lists.rkt"
-  "util/accessors.rkt"
-  "util/conversions.rkt"
   "member.rkt"
-  "class.rkt"
+  "form.rkt"
+  "util/strings.rkt"
+  "util/types.rkt"
+  "util/lists.rkt"
 )
-(#%provide new)
+(#%provide
+  object
+  object->form
+  object->string
+  object::subset?
+  object::superset?
+)
 
-(define get-member (lambda (member)
-  (member:value member)
-))
-
-(define set-member! (lambda (member new-value)
-  (set-cdr!
-    (assoc `value member)
-    new-value
-  )
-))
-
-(define call-member (lambda (member this args)
-  (if (object? member)
-    (apply
-      (member:value member)
-      args
-    )
-    (apply
-      (member:value member)
-      (cons this args)
-    )
-  )
-
-))
-
-(define new-private (lambda (original-members all-members)
-  (lambda (original-id . original-args)
-    (let*
-      (
-        (indexing? (number? original-id))
-        (id (if indexing? `access original-id))
-        (args (if indexing? (cons original-id original-args) original-args))
-        (member (id:member id all-members))
-      )
-      (cond
-        ((undefined? member)
-          (case id
-            (`to-string (members->string all-members))
-            (`class original-members)
-            (else 
-              (begin
-                (display (string-append "Member " (any->string id) " not found.\n"))
-                `undefined
-              )
-            )          
-          )
-        )
-        ((or (method? member) (object? member))
-          (call-member member (new-private original-members all-members) args)
-        )
-        ((property? member)
-          (cond
-            ((null? args)
-              (get-member member)
-            )
-            ((not (mutable? member))
-              (begin
-                (display (string-append "Member " (any->string id) " is not mutable.\n"))
-                `undefined
-              )
-            )
-            (else
-              (set-member! member (list-ref args (- (length args) 1)))
-            )
-          )
-        )
-      )
-    )
-  )
-))
-
-(define new (lambda (members)
+(define object (lambda original-members
   (let*
     (
-      (all-members (deep-copy members))
-      (public-members (filter public? all-members))      
+      (members (map member::new original-members))
     )
-    (lambda (original-id . original-args)
-      (let*
-        (
-          (indexing? (number? original-id))
-          (id (if indexing? `access original-id))
-          (args (if indexing? (cons original-id original-args) original-args))
-          (member (id:member id all-members))
-        )
-        (cond
-          ((undefined? member)
-            (case id
-              (`to-string (members->string all-members))
-              (`class members)
-              (else 
-                (begin
-                  (display (string-append "Member " (any->string id) " not found.\n"))
-                  `undefined
+    (letrec
+      (
+        (interact (lambda args
+          (let*
+            (
+              (private-access? (if (null? args)
+                #f
+                (car args)
+              ))
+              (accessible-members (if private-access?
+                members
+                (filter member::public? members)
+              ))
+              (message (if (or (null? args) (null? (cdr args)))
+                `undefined
+                (cadr args)
+              ))
+              (args (if (or (null? args) (null? (cdr args)) (null? (cddr args)))
+                `undefined
+                (cddr args)
+              ))
+            )
+            (case message
+              (`object? #t)
+              (`method? #f)
+              (`new (apply object original-members))
+              (`clone (apply object members))
+              (`add-member
+                (if (defined? args)
+                  (apply object (members::add-member original-members (car args)))
+                  (apply object original-members)
                 )
               )
-            )
-          )
-          ((method? member)
-            (call-member member (new-private members all-members) args)
-          )
-          ((property? member)
-            (cond
-              ((null? args)
-                (get-member member)
+              (`add-members 
+                (if (defined? args)
+                  (apply object (members::add-members original-members (car args)))
+                  (apply object original-members)
+                )
               )
-              ((not (mutable? member))
-                (begin
-                  (display (string-append "Member " (any->string id) " is not mutable.\n"))
-                  `undefined
+              (`form
+                (members->form members)
+              )
+              (`form-to-string
+                (form->string 
+                  (members->form members) 
+                  (if (defined? args) (car args) 0)
+                )
+              )
+              (`subset-of?
+                (if (and (defined? args) (object? (car args)))
+                  (form::subset? 
+                    (members->form members)
+                    (object->form (car args))
+                  )
+                  #f             
+                )
+              )
+              (`superset-of?
+                (if (and (defined? args) (object? (car args)))
+                  (form::superset? 
+                    (members->form members)
+                    (object->form (car args))
+                  )
+                  #f             
+                )
+              )
+              (`to-string 
+                (members->string 
+                  members 
+                  (if (defined? args) 
+                    (car args) 
+                    0
+                  )
+                )
+              )
+              (`set!
+                (
+                  (find 
+                    (lambda (mem) (equal? (member::id mem) (car args)))
+                    members
+                  )
+                  `value
+                  (cadr args)
+                )
+              )
+              (`get
+                (member::value
+                  (find 
+                    (lambda (mem) (equal? (member::id mem) (car args)))
+                    members
+                  )
                 )
               )
               (else
-                (set-member! member (list-ref args (- (length args) 1)))
+                (if (memv message (map member::id accessible-members))
+                  (let 
+                    (
+                      (target 
+                        (find 
+                          (lambda (mem) (equal? message (mem `id)))
+                          accessible-members
+                        )
+                      )
+                    )
+                    (cond
+                      ((member::method? target)
+                        (apply (member::value target) (cons
+                          (lambda args
+                            (apply interact (cons #f args))
+                          )
+                          (if (defined? args) args `())
+                        ))
+                      )
+                      ((member::object? target)
+                        (if (defined? args)
+                          (apply (member::value target) args)
+                          (member::value target)
+                        )
+                      )
+                      ((undefined? args)
+                        (member::value target)
+                      )
+                      ((member::mutable? target)
+                        (target `value (list-ref args (- (length args) 1)))
+                      )
+                      (else 
+                        (begin 
+                          (display (string-append
+                            "Warning: Attempted to mutate the member `" (symbol->string (member::id target)) ",\n"
+                            "         which was declared as read-only. The mutation was not\n"
+                            "         applied and the value was left as " (any->string (member::value target)) ".\n\n"
+                          ))
+                          (member::value target)
+                        )
+                      )
+                    )
+                  )
+                  (begin
+                    (display (string-append
+                      "Warning: Attempted to access the nonexistent member `" (symbol->string message) "\n"
+                      "         of an object.\n\n"
+                    ))
+                    #f
+                  )
+                )  
               )
             )
           )
-        )
+        ))        
+      )
+      (lambda args
+        (apply interact (cons #f args))
       )
     )
+  )
+))
+
+(define object->string (lambda (obj . indenation-depth)
+  (obj 
+    `to-string 
+    (if (null? indenation-depth)
+      0
+      (car indenation-depth)
+    )
+  )
+))
+
+(define object->form (lambda (obj)
+  (obj `form)
+))
+
+(define object::subset? (lambda (obj-a obj-b)
+  (form::subset?
+    (object->form obj-a)
+    (object->form obj-b)
+  )
+))
+
+(define object::superset? (lambda (obj-a obj-b)
+  (form::superset?
+    (object->form obj-a)
+    (object->form obj-b)
   )
 ))
