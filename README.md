@@ -1,4 +1,4 @@
-# Virtual Machine in R5RS
+# Object-Oriented Implementation of an Accumulator Machine in R5RS
 
 This program demonstrates the `/objects` library by implementing a simulated accumulator machine. I would recommend reading the library's separate documentation, in `/objects/README.md`. This documentation only explains the implementation of the machine.
 
