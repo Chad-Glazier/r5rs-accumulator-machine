@@ -1,25 +1,37 @@
 #lang r5rs
 
 (#%require
-  "class.rkt"
-  "object.rkt"
+  "form.rkt"
   "member.rkt"
-  "array.rkt"
+  "object.rkt"
+  "polymorph.rkt"
 )
 
 (#%provide
-  class
-  compose
-
-  new
-
-  array
+  ;; from "form.rkt"
+  form->string
+  form::subset?
+  form::superset?
+  
+  ;; from "member.rkt"
+  members->form
+  members->string
 
   public
-  public-mut
+  public-readonly
+  public-method
   private
-  private-mut
-  public-obj
-  private-obj
-)
+  private-readonly
+  private-method
 
+  ;; from "object.rkt"
+  object
+  object->form
+  object->string
+  object::subset?
+  object::superset?
+
+  ;; from "polymorph.rkt"
+  new
+  polymorph
+)
